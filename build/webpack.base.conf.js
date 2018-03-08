@@ -39,6 +39,8 @@ module.exports = {
       'recom':resolve('src/components/recom'),
       'toplist':resolve('src/components/toplist'),
       'search':resolve('src/components/search'),
+      'common':resolve('src/common'),
+      'api':resolve('src/api'),
     }
   },
   module: {
