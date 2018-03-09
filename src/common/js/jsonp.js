@@ -16,7 +16,7 @@ export default async function(url,params,options){
 
 /* 将对象的参数解析为字符串 */
 function constructParams(params){
-    let keys = params.keys(),
+    let keys = Object.keys(params),
         res = '';
     keys.forEach(ele => {
         res += `${encodeURIComponent(ele)}=${encodeURIComponent(params[ele])}&`;

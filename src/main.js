@@ -4,7 +4,6 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import FastClick from 'fastclick'
-import { getSlider } from 'api/recom' 
 
 /* 解决点击300ms延迟 */
 FastClick.attach(document.body)
@@ -18,4 +17,3 @@ new Vue({
   components: { App },
   template: '<App/>'
 })
-console.log(getSlider())
