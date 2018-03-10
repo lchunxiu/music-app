@@ -1,5 +1,5 @@
 <template>
-    <scroll-slider v-bind:sliderList='slider'/>
+    <scroll-slider :slider-list='slider'/>
 </template>
 <script>
     import ScrollSlider from './Slider'
@@ -7,7 +7,8 @@
     export default {
         data:function(){
             return {
-                slider:[]
+                slider:[],
+                message:'message from parent'
             };
         },
         components:{

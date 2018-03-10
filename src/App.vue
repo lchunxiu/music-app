@@ -14,55 +14,60 @@
 
 <script>
 export default {
-  name: 'App'
-}
+  name: "App"
+};
 </script>
 
 <style lang="stylus">
-@import './common/stylus/variables'
-html,*{
+@import './common/stylus/variables';
+
+html, * {
   margin: 0;
   padding: 0;
 }
+
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: $color-background-base;
 }
-.music-header{
+
+.music-header {
   background-color: $color-background-highlight;
-  height: 40px;
+  height: 44px;
 }
-.qq-logo{
-  background-image: url(./assets/logo.png);
+
+.qq-logo {
+  background-image: url('./assets/logo.png');
   background-size: cover;
   background-repeat: no-repeat;
   display: inline-block;
-  height:25px;
-  width:90px;
-  margin: 5px 0 0 10px;
+  height: 25px;
+  width: 90px;
+  margin: 10px 0 0 10px;
 }
 
-.music-nav{
-  display:flex;
-  flex-direction :row;
-  flex-wrap :nowrap;
+.music-nav {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  background-color :#FFF;
+
+  >a {
+    flex: 1 1 auto;
+    font-size: $font-size-title;
+    color: $color-font-base;
+    text-decoration: none;
+    text-align: center;
+    height: 40px;
+    line-height: @height;
+    vertical-align: middle;
   }
 
-.music-nav>a{
-  flex :1 1 auto;
-  font-size :$font-size-title;
-  color:$color-font-base;
-  text-decoration:none;
-  text-align :center;
-  height :40px;
-  line-height :@height;
-  vertical-align :middle;
-}
-
-.music-nav>a.router-link-active{
-  color:$color-font-highlight;
-  border-bottom:2px $color-font-highlight solid;
+  >a.router-link-active {
+    color: $color-font-highlight;
+    border-bottom: 2px $color-font-highlight solid;
+  }
 }
 </style>
