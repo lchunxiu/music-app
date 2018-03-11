@@ -16,7 +16,6 @@
         },
         created:function(){
             getRecom().then(data=>{ 
-                console.log('data',data);
                 this.slider = data.slider;
             })
         }

@@ -41,6 +41,7 @@ module.exports = {
       'search':resolve('src/components/search'),
       'common':resolve('src/common'),
       'api':resolve('src/api'),
+      'base':resolve('src/base'),
     }
   },
   module: {
