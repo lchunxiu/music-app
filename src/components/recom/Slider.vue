@@ -1,14 +1,12 @@
 <template>
-    <div id='wrapper' ref='slider'>
-        <div class="scroller">
-            <ul>
-                <li v-for='item in sliderList' :key='item.id'>
-                    <img :src="item.picUrl" @load="imgLoaded" width='400' alt=""/>
-                </li>
-            </ul>
-        </div>
+    <div class='slider-container'>
+        <ul id='wrapper'>
+            <li v-for='item in sliderList' :key='item.id'>
+                <a><img :src="item.picUrl" @load="imgLoaded" width='400' alt=""/></a>
+            </li>
+        </ul>
         <p class="slider-nav">
-            <b/>
+            <b v-for='index in scroll.allStep' :key='index' :class='{active:scroll.step === index}'/>
         </p>
     </div>
 </template>
@@ -21,22 +19,32 @@ export default {
   data: function() {
     return {
       slider: undefined,
-      scroll: undefined
+      scroll: {
+        step: 0,
+        allStep: 0
+      }
     };
   },
   methods: {
     imgLoaded: function() {
       console.log("image loaded");
       this.slider.init();
+    },
+    stepChange: function(step, allStep) {
+      this.scroll.step = step;
+      this.scroll.allStep = allStep;
+    },
+    isActive(step, index) {
+      return step === index;
     }
   },
   mounted: function() {
-    this.slider = new ScrollSlider("#wrapper");
+    this.slider = new ScrollSlider("#wrapper", {
+      stepChange: this.stepChange
+    });
     this.slider.init();
   },
-  updated: function() {
-    this.slider.init();
-  }
+  updated: function() {}
 };
 </script>
 
@@ -46,42 +54,45 @@ export default {
     overflow: hidden;
 }
 
-.scroller {
-    position: absolute;
-    z-index: 1;
-    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-    background-color: #a00;
-    -webkit-transform: translateZ(0);
-    -moz-transform: translateZ(0);
-    -ms-transform: translateZ(0);
-    -o-transform: translateZ(0);
-    transform: translateZ(0);
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    -webkit-text-size-adjust: none;
-    -moz-text-size-adjust: none;
-    -ms-text-size-adjust: none;
-    -o-text-size-adjust: none;
-    text-size-adjust: none;
-
-    ul {
+#wrapper {
+    ul& {
         list-style: none;
-
         li {
-            display: inline-block;
-            float: left;
+            display:block;
+            transition:all 400ms linear;
+            img{
+                position:absolute;
+            }
         }
     }
 }
 
-.slider-nav {
-    height: 200px;
-    background-color: green;
+.slider-container{
     width:100%;
-    z-index:1;
-    position:absolute;
+    position:relative;
+}
+
+.slider-nav {
+    height: 20px;
+    background-color: transparent;
+    width: 100%;
+    z-index: 1;
+    position: absolute;
+    bottom: 20px;
+    margin: 0 auto;
+    text-align: center;
+
+    b {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: rgba(144, 144, 144, 0.8);
+        margin: 0 4px;
+
+        &.active {
+            background-color: #FFF;
+        }
+    }
 }
 </style>
