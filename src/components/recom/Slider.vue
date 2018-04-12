@@ -52,17 +52,14 @@ export default {
 #wrapper {
     position: relative;
     overflow: hidden;
-}
-
-#wrapper {
+    white-space: nowrap;
     ul& {
         list-style: none;
         li {
             display:block;
-            transition:all 400ms linear;
-            img{
-                position:absolute;
-            }
+            transition-duration:400ms;
+            position:relative;
+            float:left;
         }
     }
 }
@@ -74,7 +71,7 @@ export default {
 
 .slider-nav {
     height: 20px;
-    background-color: transparent;
+    background-color: transparent;  
     width: 100%;
     z-index: 1;
     position: absolute;

@@ -3,7 +3,7 @@
 </template>
 <script>
     import ScrollSlider from './Slider'
-    import {getRecom} from 'api/recom' 
+    import {getRecom} from '../../api/recom' 
     export default {
         data:function(){
             return {
