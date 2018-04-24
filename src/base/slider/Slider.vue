@@ -1,5 +1,5 @@
 <template>
-    <div class='slider-container'>
+    <div ref='hammerArea' class='slider-container'>
         <ul :style='style.wrapperStyle'>
             <li v-for='(item, index) in imageList' :key='item.id' :style='[style.adapterStyles[index],coverAdapterStyles[index]]'>
                 <a><img :src="item.picUrl" width='100%' alt=""/></a>
@@ -13,15 +13,20 @@
 
 <script>
 import Adapter from "./adapter.js";
+import Hammer from "hammerjs";
 export default {
   props: ["imageList"],
   data: function() {
     return {
       scroll: {
         current: 0,
-        timeHandler: undefined
+        pre:this.imageList.length-1,
+        next:1,
+        timeHandler: undefined,
+        isRun: true
       },
-      coverAdapterStyles: new Array(this.imageList.length)
+      coverAdapterStyles: new Array(this.imageList.length),
+      mc: undefined
     };
   },
   computed: {
@@ -44,12 +49,12 @@ export default {
     }
   },
   methods: {
-    adapt: function() {
+    getIndex: function() {
       let size = this.adapter.adapt(this.imageList.length);
       this.wrapperSize = size.wrapperSize;
       this.adapterSize = size.adapterSize;
     },
-    run: async function() {
+    run: function() {
       let length = this.imageList.length,
         current = this.scroll.current,
         pre = (this.scroll.current - 1 + length) % length,
@@ -76,10 +81,10 @@ export default {
         (current = this.scroll.current % length),
         (pre = (this.scroll.current - 1 + length) % length),
         (next = (this.scroll.current + 1) % length);
-      
-      await new Promise((resolve)=>{
-          setTimeout(resolve,500);
-      });
+
+      // await new Promise((resolve)=>{
+      //     setTimeout(resolve,500);
+      // });
       // 在以上DOM更新完成后开始执行动画
       this.$nextTick(function() {
         this.$set(this.coverAdapterStyles, current, {
@@ -98,17 +103,41 @@ export default {
     },
     autoRun: function() {
       this.scroll.timeHandler = setTimeout(() => {
-        this.run();
+        if (this.scroll.isRun) {
+          this.run();
+        }
         this.autoRun();
       }, 2000);
+    },
+    pan: function({deltaX,isFinal}) {
+      //deltaX 水平偏移量
+      if(isFinal){
+        // 开启
+        this.scroll.isRun = true;
+        // 判断deltaX是否过半，如果过半，则向左/向右轮播，如果没有复原
+      }else{
+        // 偏移
+        this.scroll.isRun = false;
+
+      }
     }
   },
-  mounted: function() {},
+  mounted: function() {
+    this.mc = new Hammer(this.$refs.hammerArea);
+    this.mc.get("pan").set({
+      direction: Hammer.DIRECTION_ALL
+    });
+    this.mc.on("panleft panright", (function(ev) {
+      this.pan(ev);
+      console.log(ev.deltaX, " gesture detected.");
+    }).bind(this));
+  },
   updated: function() {
     if (!this.scroll.timeHandler) {
       // 默认显示第一张图片
       this.$set(this.coverAdapterStyles, this.scroll.current, {
-        transform: "translateX(" + -(Adapter.width * this.scroll.current) + "px)"
+        transform:
+          "translateX(" + -(Adapter.width * this.scroll.current) + "px)"
       });
       // 开始动画轮播
       this.autoRun();
@@ -121,7 +150,8 @@ export default {
 .slider-container {
   width: 100%;
   position: relative;
-  overflow :hidden;
+  overflow: hidden;
+
   ul {
     position: relative;
     overflow: hidden;
