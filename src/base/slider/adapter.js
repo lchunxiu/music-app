@@ -1,10 +1,7 @@
-// 判定是否未移动端
-const isMobile = /Android|webOS|iPhone|iPod|BlackBerry/i.test(
-  navigator.userAgent
-);
+
 export default class Adapter {
   static adapt(length) {
-    let size = this.getViewSize();
+    let size = Adapter.getViewSize();
     Adapter.width = size.width;
     return {
         adapterSize:size.width,
@@ -12,16 +9,10 @@ export default class Adapter {
     }
   }
   static getViewSize() {
-    if (isMobile) {
-      return {
-        width: window.screen.width,
-        height: window.screen.height
-      };
-    } else {
-      return {
-        width: 360,
-        height: 640
-      };
-    }
+    let pageSize = {
+      width:window.innerWidth,
+      height:window.innerHeight
+    };
+    return pageSize;
   }
 }

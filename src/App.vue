@@ -55,6 +55,8 @@ html, * {
   background-color :#FFF;
 
   >a {
+    display :inline-block;
+    min-width:33%;
     flex: 1 1 auto;
     font-size: $font-size-title;
     color: $color-font-base;
