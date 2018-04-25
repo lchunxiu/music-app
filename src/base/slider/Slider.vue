@@ -75,12 +75,12 @@ export default {
         "0s"
       );
     },
-    setAnimationPosition: function(toIndex,time='1s') {
+    setAnimationPosition: function(toIndex) {
       let { current, pre, next } = this.getIndex(toIndex),
         delta = 1;
 
       [pre, current].forEach(index => {
-        this.translateImage(index, Adapter.width * (index + delta), "5s");
+        this.translateImage(index, Adapter.width * (index + delta), ".5s");
         delta--;
       });
       this.translateImage(next, Adapter.width * (next - 1), "0s");
@@ -96,9 +96,9 @@ export default {
           this.run();
         }
         this.autoRun();
-      }, 5000);
+      }, 2000);
     },
-    panTranslate:function(deltaX) {
+    panTranslate: function(deltaX) {
       let { current, pre, next } = this.getIndex(this.scroll.current),
         delta = 1;
       [pre, current, next].forEach(index => {
@@ -114,7 +114,6 @@ export default {
       // 偏移
       this.scroll.isRun = false;
       this.panTranslate(deltaX);
-      console.log(this.scroll.isRun)
     }
   },
   mounted: function() {
@@ -147,15 +146,16 @@ export default {
         this.setAnimationPosition(toIndex);
         this.scroll.current = toIndex;
         // 开启
-        setTimeout(()=>{
+        setTimeout(() => {
           this.scroll.isRun = true;
-        },1000);
+        }, 1000);
       }),
       0
     );
-    document.addEventListener("visibilitychange", ()=> {
-      this.scroll.isRun = !document.hidden;
-    });
+    document.addEventListener("visibilitychange", this.changeRunState);
+  },
+  changeRunState: function() {
+    this.scroll.isRun = !document.hidden;
   },
   updated: function() {
     if (!this.scroll.timeHandler) {
@@ -163,6 +163,10 @@ export default {
       this.setInitPosition();
       this.autoRun();
     }
+  },
+  destoryed: function() {
+    document.removeEventListener("visibilitychange", this.changeRunState);
+    this.mc.off("panleft panright");
   }
 };
 </script>
@@ -185,6 +189,7 @@ export default {
       display: block;
       position: relative;
       float: left;
+      -webkit-backface-visibility: hidden; // 移动端出现闪烁
     }
   }
 }
