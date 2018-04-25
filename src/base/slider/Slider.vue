@@ -14,14 +14,13 @@
 <script>
 import Adapter from "./adapter.js";
 import Hammer from "hammerjs";
+import _ from "lodash";
 export default {
   props: ["imageList"],
   data: function() {
     return {
       scroll: {
         current: 0,
-        pre:this.imageList.length-1,
-        next:1,
         timeHandler: undefined,
         isRun: true
       },
@@ -32,12 +31,12 @@ export default {
   computed: {
     style: function() {
       let length = this.imageList.length,
-        size = Adapter.adapt(length);
-      let res = {
-        wrapperStyle: {
-          width: size.wrapperSize + "px"
-        }
-      };
+        size = Adapter.adapt(length),
+        res = {
+          wrapperStyle: {
+            width: size.wrapperSize + "px"
+          }
+        };
       res.adapterStyles = [];
       for (let i = 0; i < length; i++) {
         res.adapterStyles.push({
@@ -49,57 +48,47 @@ export default {
     }
   },
   methods: {
-    getIndex: function() {
-      let size = this.adapter.adapt(this.imageList.length);
-      this.wrapperSize = size.wrapperSize;
-      this.adapterSize = size.adapterSize;
+    getNextIndex: function(current, length) {
+      return (current + 1) % length;
+    },
+    getPreIndex: function(current, length) {
+      return (current - 1 + length) % length;
+    },
+    getIndex: function(current) {
+      let length = this.imageList.length;
+      return {
+        current: current,
+        pre: this.getPreIndex(current, length),
+        next: this.getNextIndex(current, length)
+      };
+    },
+    translateImage: function(index, x, transitionDuration = "0s") {
+      this.$set(this.coverAdapterStyles, index, {
+        transitionDuration: transitionDuration,
+        transform: "translateX(" + -x + "px)"
+      });
+    },
+    setInitPosition: function() {
+      this.translateImage(
+        this.scroll.current,
+        Adapter.width * this.scroll.current,
+        "0s"
+      );
+    },
+    setAnimationPosition: function(toIndex,time='1s') {
+      let { current, pre, next } = this.getIndex(toIndex),
+        delta = 1;
+
+      [pre, current].forEach(index => {
+        this.translateImage(index, Adapter.width * (index + delta), "5s");
+        delta--;
+      });
+      this.translateImage(next, Adapter.width * (next - 1), "0s");
     },
     run: function() {
-      let length = this.imageList.length,
-        current = this.scroll.current,
-        pre = (this.scroll.current - 1 + length) % length,
-        next = (this.scroll.current + 1) % length;
-
-      //首先清除动画
-      [current, pre, next].forEach(index => {
-        this.coverAdapterStyles[index] = {};
-      });
-
-      // 将三张图片放在正确的位置
-      // 第一张图片放左边，当前图片放当前位置，第三张图片放右边
-      this.$set(this.coverAdapterStyles, current, {
-        transform: "translateX(" + -(Adapter.width * current) + "px)"
-      });
-      this.$set(this.coverAdapterStyles, pre, {
-        transform: "translateX(" + -(Adapter.width * (pre - 1)) + "px)"
-      });
-      this.$set(this.coverAdapterStyles, next, {
-        transform: "translateX(" + -(Adapter.width * (next + 1)) + "px)"
-      });
-
-      (this.scroll.current = next),
-        (current = this.scroll.current % length),
-        (pre = (this.scroll.current - 1 + length) % length),
-        (next = (this.scroll.current + 1) % length);
-
-      // await new Promise((resolve)=>{
-      //     setTimeout(resolve,500);
-      // });
-      // 在以上DOM更新完成后开始执行动画
-      this.$nextTick(function() {
-        this.$set(this.coverAdapterStyles, current, {
-          transitionDuration: "0.5s",
-          transform: "translateX(" + -(Adapter.width * current) + "px)"
-        });
-        this.$set(this.coverAdapterStyles, pre, {
-          transitionDuration: "0.5s",
-          transform: "translateX(" + -(Adapter.width * (pre + 1)) + "px)"
-        });
-        this.$set(this.coverAdapterStyles, next, {
-          transitionDuration: "0.5s",
-          transform: "translateX(" + -(Adapter.width * (next - 1)) + "px)"
-        });
-      });
+      let next = this.getNextIndex(this.scroll.current, this.imageList.length);
+      this.setAnimationPosition(next);
+      this.scroll.current = next;
     },
     autoRun: function() {
       this.scroll.timeHandler = setTimeout(() => {
@@ -107,19 +96,25 @@ export default {
           this.run();
         }
         this.autoRun();
-      }, 2000);
+      }, 5000);
     },
-    pan: function({deltaX,isFinal}) {
-      //deltaX 水平偏移量
-      if(isFinal){
-        // 开启
-        this.scroll.isRun = true;
-        // 判断deltaX是否过半，如果过半，则向左/向右轮播，如果没有复原
-      }else{
-        // 偏移
-        this.scroll.isRun = false;
-
-      }
+    panTranslate:function(deltaX) {
+      let { current, pre, next } = this.getIndex(this.scroll.current),
+        delta = 1;
+      [pre, current, next].forEach(index => {
+        this.translateImage(
+          index,
+          Adapter.width * (index + delta) - deltaX,
+          "0s"
+        );
+        delta--;
+      });
+    },
+    pan: function({ deltaX }) {
+      // 偏移
+      this.scroll.isRun = false;
+      this.panTranslate(deltaX);
+      console.log(this.scroll.isRun)
     }
   },
   mounted: function() {
@@ -127,19 +122,45 @@ export default {
     this.mc.get("pan").set({
       direction: Hammer.DIRECTION_ALL
     });
-    this.mc.on("panleft panright", (function(ev) {
-      this.pan(ev);
-      console.log(ev.deltaX, " gesture detected.");
-    }).bind(this));
+    this.mc.on(
+      "panleft panright",
+      function(ev) {
+        this.pan(ev);
+      }.bind(this)
+    );
+    this.mc.on(
+      "panleft panright",
+      _.debounce(({ deltaX }) => {
+        // 判断deltaX是否过半，如果过半，则向左/向右轮播，如果没有复原
+        let toIndex = this.scroll.current,
+          length = this.imageList.length;
+        if (Math.abs(deltaX) > Adapter.width / 2) {
+          switch (Math.sign(deltaX)) {
+            case -1:
+              toIndex = this.getNextIndex(this.scroll.current, length);
+              break;
+            case 1:
+              toIndex = this.getPreIndex(this.scroll.current, length);
+              break;
+          }
+        }
+        this.setAnimationPosition(toIndex);
+        this.scroll.current = toIndex;
+        // 开启
+        setTimeout(()=>{
+          this.scroll.isRun = true;
+        },1000);
+      }),
+      0
+    );
+    document.addEventListener("visibilitychange", ()=> {
+      this.scroll.isRun = !document.hidden;
+    });
   },
   updated: function() {
     if (!this.scroll.timeHandler) {
-      // 默认显示第一张图片
-      this.$set(this.coverAdapterStyles, this.scroll.current, {
-        transform:
-          "translateX(" + -(Adapter.width * this.scroll.current) + "px)"
-      });
       // 开始动画轮播
+      this.setInitPosition();
       this.autoRun();
     }
   }
