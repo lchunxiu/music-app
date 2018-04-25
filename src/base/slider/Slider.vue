@@ -2,7 +2,7 @@
     <div ref='hammerArea' class='slider-container'>
         <ul :style='style.wrapperStyle'>
             <li v-for='(item, index) in imageList' :key='item.id' :style='[style.adapterStyles[index],coverAdapterStyles[index]]'>
-                <a><img :src="item.picUrl" width='100%' alt=""/></a>
+                <a :href='item.linkUrl'><img :src="item.picUrl" width='100%' alt=""/></a>
             </li>
         </ul>
         <p class="slider-nav">
